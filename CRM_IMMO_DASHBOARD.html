@@ -647,6 +647,7 @@ function entityName(type, id) {
 }
 function biensForVendeur(cid) { return (D.biens||[]).filter(b=>b.vendeur_id===cid); }
 function fPrix(v) { const n=Number(v); return n ? n.toLocaleString('fr-FR')+' EUR' : '-'; }
+function fDate(d) { if(!d)return '-'; const m=String(d).match(/^(\d{4})-(\d{2})-(\d{2})\s*(\d{2})?:?(\d{2})?/); if(!m)return d; return `${m[3]}/${m[2]}/${m[1]}${m[4]?(' '+m[4]+'h'+(m[5]||'00')):''}`;}
 function tBadge(t) {
   const m={acquereur:['Acquereur','b-blue'],vendeur:['Vendeur','b-gold'],les_deux:['Acq+Vend','b-pink']};
   const [l,c]=m[t]||[t,'b-gray']; return `<span class="badge ${c}">${l}</span>`;
@@ -731,7 +732,7 @@ function renderDashboard() {
     const name=entityName(n.type_entite,n.entite_id);
     const isRappel=n.contenu.toUpperCase().includes('RAPPEL');
     const dotColor=n.type_entite==='contact'?'pink':'blue';
-    return `<div class="tl-item"><div class="tl-dot ${dotColor}"></div><div class="tl-date">${n.date_creation}</div><span class="tl-entity">${name}</span><div class="tl-text">${n.contenu}</div>${isRappel?'<div class="tl-rappel"><svg style="width:12px;height:12px;vertical-align:middle;margin-right:3px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>Rappel</div>':''}</div>`;
+    return `<div class="tl-item"><div class="tl-dot ${dotColor}"></div><div class="tl-date">${fDate(n.date_creation)}</div><span class="tl-entity">${name}</span><div class="tl-text">${n.contenu}</div>${isRappel?'<div class="tl-rappel"><svg style="width:12px;height:12px;vertical-align:middle;margin-right:3px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>Rappel</div>':''}</div>`;
   }).join('');
 }
 
@@ -847,7 +848,7 @@ function renderJournal() {
     const name=entityName(n.type_entite,n.entite_id);
     const isRappel=n.contenu.toUpperCase().includes('RAPPEL');
     const dotColor=isRappel?'orange':n.type_entite==='contact'?'pink':'blue';
-    return `<div class="tl-item"><div class="tl-dot ${dotColor}"></div><div class="tl-date">${n.date_creation}</div><span class="tl-entity">${name}</span><div class="tl-text">${n.contenu}</div>${isRappel?'<div class="tl-rappel"><svg style="width:12px;height:12px;vertical-align:middle;margin-right:3px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>Rappel</div>':''}</div>`;
+    return `<div class="tl-item"><div class="tl-dot ${dotColor}"></div><div class="tl-date">${fDate(n.date_creation)}</div><span class="tl-entity">${name}</span><div class="tl-text">${n.contenu}</div>${isRappel?'<div class="tl-rappel"><svg style="width:12px;height:12px;vertical-align:middle;margin-right:3px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>Rappel</div>':''}</div>`;
   }).join('');
   tl.innerHTML=html;
 }
@@ -862,7 +863,7 @@ function renderNotes() {
   html+=list.map(n=>{
     const name=entityName(n.type_entite,n.entite_id);
     const typeBadge=n.type_entite==='contact'?'<span class="badge b-pink">Contact</span>':'<span class="badge b-blue">Bien</span>';
-    return `<div class="note-card" style="display:flex;align-items:start;justify-content:space-between"><div style="flex:1"><div class="nc-date">${n.date_creation} ${typeBadge} <strong>${name}</strong></div><div class="nc-text">${n.contenu}</div></div><div style="display:flex;gap:0.3rem;flex-shrink:0;margin-left:0.5rem"><button class="action-btn gray" onclick="editItemContent('note','${n.id}')" style="padding:0.3rem 0.5rem" title="Modifier"><svg style="width:12px;height:12px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button><button class="action-btn gray" onclick="deleteItem('note','${n.id}')" style="padding:0.3rem 0.5rem;color:var(--red)" title="Supprimer"><svg style="width:12px;height:12px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button></div></div>`;
+    return `<div class="note-card" style="display:flex;align-items:start;justify-content:space-between"><div style="flex:1"><div class="nc-date">${fDate(n.date_creation)} ${typeBadge} <strong>${name}</strong></div><div class="nc-text">${n.contenu}</div></div><div style="display:flex;gap:0.3rem;flex-shrink:0;margin-left:0.5rem"><button class="action-btn gray" onclick="editItemContent('note','${n.id}')" style="padding:0.3rem 0.5rem" title="Modifier"><svg style="width:12px;height:12px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button><button class="action-btn gray" onclick="deleteItem('note','${n.id}')" style="padding:0.3rem 0.5rem;color:var(--red)" title="Supprimer"><svg style="width:12px;height:12px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button></div></div>`;
   }).join('');
   box.innerHTML=html;
 }
@@ -920,7 +921,7 @@ function showContactModal(id) {
   }
   if(notes.length){
     h+=`<div class="section-title">Notes (${notes.length})</div>`;
-    notes.forEach(n=>{h+=`<div class="note-card"><div class="nc-date">${n.date_creation}</div><div class="nc-text">${n.contenu}</div></div>`;});
+    notes.forEach(n=>{h+=`<div class="note-card"><div class="nc-date">${fDate(n.date_creation)}</div><div class="nc-text">${n.contenu}</div></div>`;});
   }
   document.getElementById('modal-title').textContent=`${c.prenom} ${c.nom} (${c.id})`;
   document.getElementById('modal-body').innerHTML=h;
@@ -976,7 +977,7 @@ function showBienModal(id) {
   }
   if(notes.length){
     h+=`<div class="section-title">Notes (${notes.length})</div>`;
-    notes.forEach(n=>{h+=`<div class="note-card"><div class="nc-date">${n.date_creation}</div><div class="nc-text">${n.contenu}</div></div>`;});
+    notes.forEach(n=>{h+=`<div class="note-card"><div class="nc-date">${fDate(n.date_creation)}</div><div class="nc-text">${n.contenu}</div></div>`;});
   }
   document.getElementById('modal-title').textContent=`${b.type_bien} - ${b.ville} (${b.id})`;
   document.getElementById('modal-body').innerHTML=h;
@@ -1002,7 +1003,7 @@ function renderVisites() {
     const bienLabel = bien ? `${bien.type_bien} - ${bien.ville} (${fPrix(bien.prix)})` : v.bien_id;
     const acqLabel = acq ? `${acq.prenom} ${acq.nom}` : v.acquereur_id;
     return `<div class="note-card" style="border-left-color:${v.type==='denonce'?'var(--orange)':'var(--blue)'}">
-      <div class="nc-date">${v.date_visite} ${typeBadge}</div>
+      <div class="nc-date">${fDate(v.date_visite)} ${typeBadge}</div>
       <div style="display:flex;gap:0.5rem;margin:0.3rem 0;flex-wrap:wrap"><span class="badge b-pink">${acqLabel}</span> <span style="color:var(--text-muted)">→</span> <span class="badge b-gold">${bienLabel}</span></div>
       <div class="nc-text">${v.contenu}</div>
     </div>`;
@@ -1200,7 +1201,7 @@ function renderRappels() {
     const dateBadge = isLate ? '<span class="badge b-red" style="margin-left:0.4rem">En retard</span>' : isDone ? '<span class="badge b-green" style="margin-left:0.4rem">Fait</span>' : '<span class="badge b-orange" style="margin-left:0.4rem">A venir</span>';
     return `<div class="note-card" style="border-left-color:${borderColor};display:flex;align-items:center;justify-content:space-between">
       <div style="flex:1">
-        <div class="nc-date">${r.date_rappel} ${dateBadge}</div>
+        <div class="nc-date">${fDate(r.date_rappel)} ${dateBadge}</div>
         <div style="font-weight:600;color:var(--pp-pink);font-size:0.82rem;margin:0.2rem 0">${name}</div>
         <div class="nc-text">${r.contenu}</div>
       </div>
