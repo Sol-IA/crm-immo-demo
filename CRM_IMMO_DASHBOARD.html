@@ -1,0 +1,1366 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CRM IMMO - Thibaut ARPAIA</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  --bg: #f5f5f5;
+  --bg-card: #ffffff;
+  --bg-sidebar: #1a1a1a;
+  --bg-sidebar-hover: #2a2a2a;
+  --bg-header: linear-gradient(135deg, #1a1a1a 0%, #3a1a2a 50%, #ed1651 100%);
+  --text: #333333;
+  --text-secondary: #707070;
+  --text-muted: #999999;
+  --border: #e5e5e5;
+  --pp-pink: #ed1651;
+  --pp-pink-light: #fce4ec;
+  --pp-dark: #1a1a1a;
+  --gold: #c9952d;
+  --gold-light: #f5e6c8;
+  --green: #10b981;
+  --green-light: #d1fae5;
+  --orange: #f59e0b;
+  --orange-light: #fef3c7;
+  --red: #ef4444;
+  --red-light: #fee2e2;
+  --blue: #3b82f6;
+  --blue-light: #dbeafe;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+  --shadow: 0 2px 8px rgba(0,0,0,0.06);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.1);
+  --radius: 6px;
+}
+[data-theme="dark"] {
+  --bg: #111111;
+  --bg-card: #1e1e1e;
+  --bg-sidebar: #0a0a0a;
+  --bg-sidebar-hover: #1a1a1a;
+  --bg-header: linear-gradient(135deg, #0a0a0a 0%, #2a0f1a 50%, #ed1651 100%);
+  --text: #e5e5e5;
+  --text-secondary: #aaaaaa;
+  --text-muted: #777777;
+  --border: #333333;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
+  --shadow: 0 2px 8px rgba(0,0,0,0.4);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.5);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+/* === HEADER === */
+.header {
+  background: var(--bg-header);
+  color: #fff;
+  padding: 0.8rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: var(--shadow-lg);
+}
+.header-left { display: flex; align-items: center; gap: 1rem; }
+.header-logo { height: 36px; }
+.header-sep { width: 1px; height: 28px; background: rgba(255,255,255,0.2); }
+.header-agent {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+.header-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(255,255,255,0.6);
+  box-shadow: 0 0 0 3px rgba(237,22,81,0.3);
+}
+.header-name { font-weight: 600; font-size: 0.95rem; line-height: 1.2; }
+.header-role { font-size: 0.72rem; color: rgba(255,255,255,0.6); font-weight: 400; }
+.header-right { display: flex; gap: 0.5rem; align-items: center; }
+.btn-icon {
+  background: rgba(255,255,255,0.1);
+  border: none;
+  color: #fff;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+.btn-icon:hover { background: rgba(255,255,255,0.2); }
+.sync-badge { display: flex; align-items: center; font-size: 0.7rem; color: rgba(255,255,255,0.5); background: rgba(255,255,255,0.08); padding: 0.3rem 0.7rem; border-radius: 6px; }
+
+/* === NAV === */
+.nav {
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 0 1rem;
+}
+.nav::-webkit-scrollbar { display: none; }
+.nav-btn {
+  padding: 0.9rem 1.2rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+  transition: all 0.2s;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.nav-btn.active { color: var(--pp-pink); border-bottom-color: var(--pp-pink); border-bottom-width: 3px; font-weight: 700; }
+.nav-btn:hover { color: var(--text); }
+.nav-count {
+  background: var(--bg);
+  color: var(--text-secondary);
+  font-size: 0.7rem;
+  padding: 0.1rem 0.45rem;
+  border-radius: 10px;
+  font-weight: 600;
+}
+.nav-btn.active .nav-count { background: var(--pp-pink-light); color: var(--pp-pink); }
+
+/* === LAYOUT === */
+.container { max-width: 1280px; margin: 0 auto; padding: 1.5rem; }
+.view { display: none; }
+.view.active { display: block; }
+
+/* === CARDS === */
+.card {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+.card-header {
+  padding: 1rem 1.2rem;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.card-header h3 { font-size: 0.78rem; font-weight: 700; color: var(--pp-pink); text-transform: uppercase; letter-spacing: 0.06em; }
+.card-body { padding: 1.2rem; }
+
+/* === KPIs === */
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+.kpi {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  padding: 1.2rem;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--pp-pink);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.kpi:hover { box-shadow: var(--shadow); transform: translateY(-1px); }
+.kpi-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+.kpi-icon.pink { background: var(--pp-pink-light); color: var(--pp-pink); }
+.kpi-icon.green { background: var(--green-light); color: var(--green); }
+.kpi-icon.orange { background: var(--orange-light); color: var(--orange); }
+.kpi-icon.gold { background: var(--gold-light); color: var(--gold); }
+.kpi-value { font-size: 1.8rem; font-weight: 800; color: var(--text); line-height: 1; }
+.kpi-label { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem; }
+
+/* === CHARTS === */
+.charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
+
+/* === TABLES === */
+.filters { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.filter-select, .filter-input {
+  padding: 0.45rem 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.8rem;
+  background: var(--bg);
+  color: var(--text);
+  font-family: inherit;
+}
+table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+th {
+  text-align: left;
+  padding: 0.7rem 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  white-space: nowrap;
+  user-select: none;
+}
+th:hover { color: var(--pp-pink); }
+td { padding: 0.7rem 0.8rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--bg); }
+tr { cursor: pointer; transition: background 0.15s; }
+
+/* === BADGES === */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  gap: 0.3rem;
+}
+.b-green { background: var(--green-light); color: #065f46; }
+.b-orange { background: var(--orange-light); color: #92400e; }
+.b-red { background: var(--red-light); color: #991b1b; }
+.b-blue { background: var(--blue-light); color: #1e40af; }
+.b-pink { background: var(--pp-pink-light); color: var(--pp-pink); }
+.b-gray { background: var(--bg); color: var(--text-muted); }
+.b-gold { background: var(--gold-light); color: #78350f; }
+.dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+.dot-green { background: var(--green); }
+.dot-orange { background: var(--orange); }
+.dot-red { background: var(--red); }
+
+/* === MODAL === */
+.modal-bg {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(4px);
+  z-index: 300;
+  align-items: center;
+  justify-content: center;
+}
+.modal-bg.active { display: flex; }
+.modal {
+  background: var(--bg-card);
+  border-radius: 16px;
+  width: 90%;
+  max-width: 640px;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border);
+}
+.modal-head {
+  padding: 1.2rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.modal-head h2 { font-size: 1rem; font-weight: 700; }
+.modal-close { background: none; border: none; font-size: 1.4rem; cursor: pointer; color: var(--text-muted); padding: 0.3rem; }
+.modal-body { padding: 1.5rem; }
+.field { margin-bottom: 1rem; }
+.field-label { font-size: 0.72rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem; }
+.field-value { font-size: 0.9rem; color: var(--text); }
+.note-card {
+  padding: 0.8rem;
+  background: var(--bg);
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+  border-left: 3px solid var(--pp-pink);
+}
+.note-card .nc-date { font-size: 0.7rem; color: var(--text-muted); margin-bottom: 0.2rem; }
+.note-card .nc-text { font-size: 0.85rem; }
+.section-title { font-size: 0.75rem; font-weight: 700; color: var(--pp-pink); text-transform: uppercase; letter-spacing: 0.05em; margin: 1.2rem 0 0.6rem; padding-bottom: 0.3rem; border-bottom: 2px solid var(--pp-pink); }
+
+/* === TIMELINE (Journal) === */
+.timeline { position: relative; padding-left: 1.5rem; }
+.timeline::before { content: ''; position: absolute; left: 0.45rem; top: 0; bottom: 0; width: 2px; background: var(--border); }
+.tl-item { position: relative; padding-bottom: 1.2rem; }
+.tl-item:last-child { padding-bottom: 0; }
+.tl-dot {
+  position: absolute;
+  left: -1.15rem;
+  top: 0.3rem;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid var(--bg-card);
+}
+.tl-dot.pink { background: var(--pp-pink); }
+.tl-dot.blue { background: var(--blue); }
+.tl-dot.green { background: var(--green); }
+.tl-dot.orange { background: var(--orange); }
+.tl-dot.gold { background: var(--gold); }
+.tl-date { font-size: 0.7rem; color: var(--text-muted); margin-bottom: 0.15rem; }
+.tl-entity { font-weight: 600; font-size: 0.82rem; color: var(--pp-pink); }
+.tl-text { font-size: 0.82rem; color: var(--text); margin-top: 0.1rem; }
+.tl-rappel { background: var(--orange-light); border-radius: 6px; padding: 0.3rem 0.6rem; font-size: 0.75rem; color: #92400e; margin-top: 0.3rem; display: inline-block; }
+
+/* === EDITABLE FIELDS === */
+.editable { position: relative; cursor: pointer; display: inline-flex; align-items: center; gap: 0.3rem; }
+.editable:hover .edit-icon { opacity: 1; }
+.edit-icon { opacity: 0; transition: opacity 0.15s; color: var(--pp-pink); flex-shrink: 0; }
+.edit-input {
+  padding: 0.35rem 0.5rem;
+  border: 2px solid var(--pp-pink);
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-family: inherit;
+  color: var(--text);
+  background: var(--bg-card);
+  outline: none;
+  width: 100%;
+  max-width: 220px;
+}
+.edit-select {
+  padding: 0.35rem 0.5rem;
+  border: 2px solid var(--pp-pink);
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-family: inherit;
+  color: var(--text);
+  background: var(--bg-card);
+  outline: none;
+}
+.action-bar { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; padding-bottom: 0.8rem; border-bottom: 1px solid var(--border); }
+.action-btn {
+  padding: 0.4rem 0.9rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+.action-btn:hover { opacity: 0.85; }
+.action-btn.pink { background: var(--pp-pink); color: #fff; }
+.action-btn.green { background: var(--green); color: #fff; }
+.action-btn.orange { background: var(--orange); color: #fff; }
+.action-btn.gray { background: var(--border); color: var(--text-secondary); }
+.toast {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  padding: 0.7rem 1.2rem;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  z-index: 400;
+  animation: toastIn 0.3s ease;
+  box-shadow: var(--shadow-lg);
+}
+.toast.ok { background: var(--green); color: #fff; }
+.toast.err { background: var(--red); color: #fff; }
+@keyframes toastIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* === SVG ICONS === */
+.icon { width: 18px; height: 18px; display: inline-block; vertical-align: middle; fill: currentColor; flex-shrink: 0; }
+.icon-lg { width: 22px; height: 22px; }
+.nav-btn .icon { width: 16px; height: 16px; }
+.nav-btn .icon { color: var(--text-muted); }
+.nav-btn.active .icon { color: var(--pp-pink); }
+.nav-btn:hover .icon { color: var(--text); }
+.kpi-icon .icon { width: 22px; height: 22px; }
+
+/* === RESPONSIVE === */
+@media (max-width: 768px) {
+  .container { padding: 1rem; }
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .charts-grid { grid-template-columns: 1fr; }
+  .nav-btn { padding: 0.7rem 0.8rem; font-size: 0.75rem; }
+  .header-name { font-size: 0.82rem; }
+  .header-role { display: none; }
+}
+@media (max-width: 480px) {
+  .kpi-grid { grid-template-columns: 1fr; }
+  .header-sep { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-left">
+    <img src="logo-pp.svg" alt="Proprietes-Privees" class="header-logo">
+    <div class="header-sep"></div>
+    <div class="header-agent">
+      <img src="TPH.png.webp" alt="Thibaut ARPAIA" class="header-avatar">
+      <div>
+        <div class="header-name">Thibaut ARPAIA</div>
+        <div class="header-role">Agent commercial - Valensole / Manosque / Digne</div>
+      </div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="sync-badge" id="sync-badge" title="Derniere synchronisation PP"><svg style="width:12px;height:12px;margin-right:4px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg><span id="sync-time">-</span></div>
+    <button class="btn-icon" onclick="toggleTheme()" title="Mode sombre"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg></button>
+  </div>
+</div>
+
+<!-- NAV -->
+<div class="nav" id="main-nav">
+  <button class="nav-btn active" onclick="showView('dashboard',this)"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg> Tableau de bord</button>
+  <button class="nav-btn" onclick="showView('contacts',this)"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg> Contacts <span class="nav-count" id="nav-contacts">-</span></button>
+  <button class="nav-btn" onclick="showView('biens',this)"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> Biens <span class="nav-count" id="nav-biens">-</span></button>
+  <button class="nav-btn" onclick="showView('matchs',this)"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg> Matchs <span class="nav-count" id="nav-matchs">-</span></button>
+  <button class="nav-btn" onclick="showView('matchext',this)"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6"/><path d="M23 11h-6"/></svg> Externes <span class="nav-count" id="nav-ext">-</span></button>
+  <button class="nav-btn" onclick="showView('journal',this)"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Journal <span class="nav-count" id="nav-journal">-</span></button>
+  <button class="nav-btn" onclick="showView('visites',this)"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> Visites <span class="nav-count" id="nav-visites">-</span></button>
+  <button class="nav-btn" onclick="showView('rappels',this)"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg> Rappels <span class="nav-count" id="nav-rappels">-</span></button>
+  <button class="nav-btn" onclick="showView('notes',this)"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> Notes</button>
+</div>
+
+<div class="container">
+
+  <!-- VUE 1 : DASHBOARD -->
+  <div id="view-dashboard" class="view active">
+    <div class="kpi-grid">
+      <div class="kpi"><div class="kpi-icon pink"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></div><div><div class="kpi-value" id="kpi-acq">-</div><div class="kpi-label">Acquereurs actifs</div></div></div>
+      <div class="kpi"><div class="kpi-icon green"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div><div><div class="kpi-value" id="kpi-biens">-</div><div class="kpi-label">Biens disponibles</div></div></div>
+      <div class="kpi"><div class="kpi-icon orange"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg></div><div><div class="kpi-value" id="kpi-matchs">-</div><div class="kpi-label">Matchs en cours</div></div></div>
+      <div class="kpi"><div class="kpi-icon gold"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.78 7.78 5.5 5.5 0 017.78-7.78zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg></div><div><div class="kpi-value" id="kpi-vendus">-</div><div class="kpi-label">Biens vendus</div></div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem">
+      <div class="card"><div class="card-header"><h3>Biens par statut</h3></div><div class="card-body" style="display:flex;justify-content:center"><canvas id="chart-statut" height="200" style="max-width:280px"></canvas></div></div>
+      <div class="card"><div class="card-header"><h3>Pipeline</h3></div><div class="card-body" id="pipeline-recap"></div></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><h3>Activite recente</h3></div>
+      <div class="card-body">
+        <div class="timeline" id="dashboard-timeline"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VUE 2 : CONTACTS -->
+  <div id="view-contacts" class="view">
+    <div class="card">
+      <div class="card-header">
+        <h3>Contacts</h3>
+        <div class="filters">
+          <select class="filter-select" id="f-ct" onchange="renderContacts()"><option value="">Tous types</option><option value="acquereur">Acquereurs</option><option value="vendeur">Vendeurs</option><option value="les_deux">Acq+Vendeur</option></select>
+          <select class="filter-select" id="f-cs" onchange="renderContacts()"><option value="">Tous statuts</option><option value="actif">Actifs</option><option value="en_pause">En pause</option><option value="archive">Archives</option></select>
+        </div>
+      </div>
+      <div class="card-body" id="tb-contacts"></div>
+    </div>
+  </div>
+
+  <!-- VUE 3 : BIENS -->
+  <div id="view-biens" class="view">
+    <div class="card">
+      <div class="card-header">
+        <h3>Biens immobiliers</h3>
+        <div class="filters">
+          <select class="filter-select" id="f-bs" onchange="renderBiens()"><option value="">Tous statuts</option><option value="disponible">Disponibles</option><option value="sous_compromis">Sous compromis</option><option value="vendu">Vendus</option><option value="archive">Archives</option></select>
+          <select class="filter-select" id="f-bt" onchange="renderBiens()"><option value="">Tous types</option><option value="maison">Maison</option><option value="appartement">Appartement</option><option value="terrain">Terrain</option></select>
+          <input class="filter-input" id="f-bv" placeholder="Ville..." oninput="renderBiens()">
+        </div>
+      </div>
+      <div class="card-body" id="tb-biens"></div>
+    </div>
+  </div>
+
+  <!-- VUE 4 : MATCHS -->
+  <div id="view-matchs" class="view">
+    <div class="card">
+      <div class="card-header">
+        <h3>Matchs acquereurs / biens</h3>
+        <div class="filters">
+          <select class="filter-select" id="f-ms" onchange="renderMatchs()"><option value="">Tous statuts</option><option value="suggere">Suggeres</option><option value="contacte">Contactes</option><option value="visite">Visites</option><option value="refuse">Refuses</option><option value="accepte">Acceptes</option></select>
+        </div>
+      </div>
+      <div class="card-body" id="matchs-box"></div>
+    </div>
+  </div>
+
+  <!-- VUE 5 : MATCHS EXTERNES -->
+  <div id="view-matchext" class="view">
+    <div class="card">
+      <div class="card-header"><h3>Matchs externes — biens d'autres agents</h3><div class="filters"><select class="filter-select" id="f-mea" onchange="renderMatchExt()"></select></div></div>
+      <div class="card-body" id="matchext-box"></div>
+    </div>
+  </div>
+
+  <!-- VUE 6 : VISITES -->
+  <div id="view-visites" class="view">
+    <div class="card">
+      <div class="card-header">
+        <h3>Visites — Denonciations &amp; Comptes-rendus</h3>
+        <div class="filters">
+          <select class="filter-select" id="f-vt" onchange="renderVisites()"><option value="">Toutes</option><option value="denonce">Denonciations</option><option value="compte_rendu">Comptes-rendus</option></select>
+        </div>
+      </div>
+      <div class="card-body" id="visites-box"></div>
+    </div>
+  </div>
+
+  <!-- VUE 7 : JOURNAL -->
+  <div id="view-journal" class="view">
+    <div class="card">
+      <div class="card-header"><h3>Journal d'activite &amp; Rappels</h3></div>
+      <div class="card-body">
+        <div class="timeline" id="journal-timeline"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VUE 6 : RAPPELS -->
+  <div id="view-rappels" class="view">
+    <div class="card">
+      <div class="card-header">
+        <h3>Rappels &amp; suivis</h3>
+        <div class="filters">
+          <select class="filter-select" id="f-rs" onchange="renderRappels()"><option value="actif">A faire</option><option value="">Tous</option><option value="fait">Faits</option></select>
+        </div>
+      </div>
+      <div class="card-body" id="rappels-box"></div>
+    </div>
+  </div>
+
+  <!-- VUE 7 : NOTES -->
+  <div id="view-notes" class="view">
+    <div class="card">
+      <div class="card-header">
+        <h3>Toutes les notes</h3>
+        <div class="filters">
+          <select class="filter-select" id="f-nt" onchange="renderNotes()"><option value="">Toutes</option><option value="contact">Contacts</option><option value="bien">Biens</option></select>
+        </div>
+      </div>
+      <div class="card-body" id="notes-box"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- MODAL -->
+<div class="modal-bg" id="modal-bg" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-head"><h2 id="modal-title"></h2><button class="modal-close" onclick="closeModal()">&times;</button></div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<script>
+const WEBHOOK_URL = 'REMPLACER_PAR_URL_WEBHOOK';
+const EDIT_URL = 'REMPLACER_PAR_URL_WEBHOOK_EDIT';
+const EDIT_TOKEN = 'REMPLACER_PAR_TOKEN_EDIT';
+const IS_DEMO = true; // passe a false en production
+
+const DEMO_DATA = {
+  contacts: [
+    {id:"C001",type:"les_deux",prenom:"Thibaut",nom:"ARPAIA",telephone:"0628596748",email:"t.arpaia@proprietes-privees.com",villes_souhaitees:"",rayon_km:"",surface_min:"",nb_pieces_min:"",type_bien_recherche:"",budget_ideal:"",budget_max:"",budget_fdn:"NON",statut:"actif",date_creation:"2026-03-01 09:00"},
+    {id:"C002",type:"acquereur",prenom:"Jean",nom:"DUPONT",telephone:"0612345678",email:"jean.dupont@email.com",villes_souhaitees:"Manosque, Forcalquier",rayon_km:20,surface_min:100,nb_pieces_min:4,nb_chambres_min:3,type_bien_recherche:"maison",budget_ideal:280000,budget_max:320000,budget_fdn:"NON",projet:"residence_principale",fibre:"oui",surface_terrain_min:400,annee_construction_min:"",assainissement:"indifferent",statut:"actif",date_creation:"2026-03-05 10:30",date_anniversaire:"1985-06-12"},
+    {id:"C003",type:"acquereur",prenom:"Marie",nom:"LEROY",telephone:"0698765432",email:"marie.leroy@email.com",villes_souhaitees:"Manosque, Pierrevert",rayon_km:15,surface_min:70,nb_pieces_min:3,nb_chambres_min:2,type_bien_recherche:"appartement",budget_ideal:180000,budget_max:220000,budget_fdn:"OUI",projet:"investissement",fibre:"indifferent",surface_terrain_min:"",annee_construction_min:"",assainissement:"indifferent",statut:"actif",date_creation:"2026-03-08 14:15",date_anniversaire:"1992-04-15"},
+    {id:"C004",type:"acquereur",prenom:"Pierre",nom:"MARTIN",telephone:"0645678901",email:"pierre.martin@email.com",villes_souhaitees:"Ginasservis, Valensole",rayon_km:30,surface_min:120,nb_pieces_min:5,nb_chambres_min:4,type_bien_recherche:"maison",budget_ideal:400000,budget_max:480000,budget_fdn:"NON",projet:"residence_principale",fibre:"indifferent",surface_terrain_min:1000,annee_construction_min:"",assainissement:"tout_egout",statut:"actif",date_creation:"2026-03-10 11:00",date_anniversaire:"1978-11-03"},
+    {id:"C005",type:"vendeur",prenom:"Sophie",nom:"BERNARD",telephone:"0667890123",email:"sophie.bernard@email.com",villes_souhaitees:"",rayon_km:"",surface_min:"",nb_pieces_min:"",type_bien_recherche:"",budget_ideal:"",budget_max:"",budget_fdn:"NON",statut:"actif",date_creation:"2026-03-12 16:45"}
+  ],
+  biens: [
+    {id:"B001",ref_pp:"443518TPH",vendeur_id:"C005",type_bien:"maison",adresse:"",ville:"Ginasservis",code_postal:"83560",surface:140,nb_pieces:5,nb_chambres:3,prix:420000,description:"Maison d'architecte en ossature bois, terrain 2318m2, piscine, garage, carport, DPE B, proche ITER/Cadarache",statut:"disponible",date_creation:"2026-03-01 09:00",partage:"prive",photo_url:"https://images.proprietes-privees.com/annonce/443518TPH/PROPRIETES-PRIVEES-443518TPH-1.jpg",url_pp:"https://www.proprietes-privees.com/annonces/443518TPH",fibre:"oui",surface_terrain:2318,annee_construction:2018,assainissement:"fosse"},
+    {id:"B002",ref_pp:"425538TPH",vendeur_id:"",type_bien:"appartement",adresse:"",ville:"Manosque",code_postal:"04100",surface:124,nb_pieces:5,prix:240000,description:"Spacieux T5 renove face au Parc de Drouille, 4e etage ascenseur, terrasse plein sud, cave, parking, DPE B",statut:"disponible",date_creation:"2026-03-01 09:00",partage:"prive",photo_url:"https://images.proprietes-privees.com/annonce/425538TPH/PROPRIETES-PRIVEES-425538TPH-1.jpg",url_pp:"https://www.proprietes-privees.com/annonces/425538TPH"},
+    {id:"B003",ref_pp:"431938TPH",vendeur_id:"",type_bien:"appartement",adresse:"",ville:"Digne-Les-Bains",code_postal:"04000",surface:77,nb_pieces:4,prix:176000,description:"Lumineux T3 RDJ jardin privatif, garage communicant, quartier du Moulin, DPE E",statut:"disponible",date_creation:"2026-03-01 09:00",partage:"prive",photo_url:"https://images.proprietes-privees.com/annonce/431938TPH/PROPRIETES-PRIVEES-431938TPH-1.jpg",url_pp:"https://www.proprietes-privees.com/annonces/431938TPH"},
+    {id:"B004",ref_pp:"434341TPH",vendeur_id:"",type_bien:"maison",adresse:"",ville:"Manosque",code_postal:"04100",surface:120,nb_pieces:5,nb_chambres:4,prix:295000,description:"Plain-pied familial au calme, sous-sol 90m2, piscine, panneaux solaires, terrain 500m2, DPE C",statut:"disponible",date_creation:"2026-03-01 09:00",partage:"prive",photo_url:"https://images.proprietes-privees.com/annonce/434341TPH/PROPRIETES-PRIVEES-434341TPH-1.jpg",url_pp:"https://www.proprietes-privees.com/annonces/434341TPH",fibre:"oui",surface_terrain:500,annee_construction:1995,assainissement:"tout_egout"},
+    {id:"B005",ref_pp:"407303TPH",vendeur_id:"",type_bien:"maison",adresse:"",ville:"Valensole",code_postal:"04210",surface:57,nb_pieces:3,prix:168000,description:"Maison de plain-pied dans le charmant village de Valensole, 2 chambres",statut:"disponible",date_creation:"2026-03-01 09:00",partage:"prive",photo_url:"https://images.proprietes-privees.com/annonce/407303TPH/PROPRIETES-PRIVEES-407303TPH-1.jpg",url_pp:"https://www.proprietes-privees.com/annonces/407303TPH"},
+    {id:"B006",ref_pp:"432929TPH",vendeur_id:"",type_bien:"terrain",adresse:"",ville:"Oraison",code_postal:"04700",surface:892,nb_pieces:0,prix:159000,description:"Terrain constructible en position dominante, expose plein sud, 892m2",statut:"disponible",date_creation:"2026-03-01 09:00",partage:"prive",photo_url:"https://images.proprietes-privees.com/annonce/432929TPH/PROPRIETES-PRIVEES-432929TPH-1.jpg",url_pp:"https://www.proprietes-privees.com/annonces/432929TPH"},
+    {id:"B007",ref_pp:"436761TPH",vendeur_id:"",type_bien:"maison",adresse:"",ville:"Oraison",code_postal:"04700",surface:114,nb_pieces:5,prix:285000,description:"Grande maison de ville, a deux pas des ecoles et commerces, 3 chambres",statut:"sous_compromis",date_creation:"2026-03-01 09:00",partage:"prive",photo_url:"https://images.proprietes-privees.com/annonce/436761TPH/PROPRIETES-PRIVEES-436761TPH-1.jpg",url_pp:"https://www.proprietes-privees.com/annonces/436761TPH"},
+    {id:"B008",ref_pp:"425238TPH",vendeur_id:"",type_bien:"maison",adresse:"",ville:"Valensole",code_postal:"04210",surface:95,nb_pieces:5,prix:150000,description:"Maison de village avec tropezienne, garage et cave voutee, 3 chambres",statut:"sous_compromis",date_creation:"2026-03-01 09:00",partage:"prive",photo_url:"https://images.proprietes-privees.com/annonce/425238TPH/PROPRIETES-PRIVEES-425238TPH-1.jpg",url_pp:"https://www.proprietes-privees.com/annonces/425238TPH"}
+  ],
+  notes: [
+    {id:"N001",type_entite:"contact",entite_id:"C002",contenu:"Premier contact par telephone, cherche maison familiale secteur Manosque, mutation ITER prevue juin",date_creation:"2026-03-05 10:45"},
+    {id:"N002",type_entite:"contact",entite_id:"C003",contenu:"Rendez-vous agence, budget serre mais motivee, primo-accedante",date_creation:"2026-03-08 15:00"},
+    {id:"N003",type_entite:"bien",entite_id:"B001",contenu:"Visite avec couple DUPONT, tres interesses par la piscine et proximite ITER",date_creation:"2026-03-15 11:30"},
+    {id:"N004",type_entite:"contact",entite_id:"C004",contenu:"RAPPEL: Martin a rappele, veut visiter les maisons Ginasservis avant fin mars",date_creation:"2026-03-18 09:15"},
+    {id:"N005",type_entite:"bien",entite_id:"B003",contenu:"Baisse de prix envisagee par le vendeur, en attente confirmation",date_creation:"2026-03-20 14:00"},
+    {id:"N006",type_entite:"bien",entite_id:"B002",contenu:"Plusieurs demandes cette semaine, bien tres demande",date_creation:"2026-03-22 10:00"}
+  ],
+  matchs: [
+    {id:"M001",bien_id:"B004",acquereur_id:"C002",type_match:"strict",statut:"visite",notes:"Visite programmee le 25/03",date_creation:"2026-03-15 12:00"},
+    {id:"M002",bien_id:"B001",acquereur_id:"C004",type_match:"souple",statut:"contacte",notes:"Contact telephonique, interesse",date_creation:"2026-03-18 10:00"},
+    {id:"M003",bien_id:"B003",acquereur_id:"C003",type_match:"strict",statut:"suggere",notes:"",date_creation:"2026-03-20 14:30"}
+  ],
+  rappels: [
+    {id:"R001",type_entite:"contact",entite_id:"C002",contenu:"Rappeler Jean DUPONT pour la visite B004",date_rappel:"2026-04-01",statut:"actif",date_creation:"2026-03-25 10:00"},
+    {id:"R002",type_entite:"contact",entite_id:"C004",contenu:"Relancer Pierre MARTIN - maisons Ginasservis",date_rappel:"2026-04-03",statut:"actif",date_creation:"2026-03-28 09:00"},
+    {id:"R003",type_entite:"bien",entite_id:"B003",contenu:"Verifier baisse de prix confirmee par vendeur",date_rappel:"2026-03-28",statut:"fait",date_creation:"2026-03-20 14:00"},
+    {id:"R004",type_entite:"contact",entite_id:"C003",contenu:"Anniversaire Marie LEROY - envoyer un message",date_rappel:"2026-04-15",statut:"actif",date_creation:"2026-03-22 08:00"}
+  ],
+  agents: [
+    {id:"AG001",prenom:"Thibaut",nom:"ARPAIA",email:"t.arpaia@proprietes-privees.com",telephone:"0628596748",secteur:"Valensole / Manosque / Digne"},
+    {id:"AG002",prenom:"Alexandra",nom:"DUCHER-CASADO",email:"a.ducher@proprietes-privees.com",telephone:"0600000000",secteur:"Greoux / Manosque"}
+  ],
+  biens_externes: [
+    {id:"EXT001",agent_id:"AG002",type_bien:"maison",ville:"Greoux-Les-Bains",code_postal:"04800",surface:95,nb_pieces:4,prix:265000,description:"Maison de village renovee, 3 chambres, terrasse, vue degagee",photo_url:"https://images.proprietes-privees.com/annonce/432929TPH/PROPRIETES-PRIVEES-432929TPH-1.jpg",url_pp:"https://www.proprietes-privees.com/annonces/exemple"},
+    {id:"EXT002",agent_id:"AG002",type_bien:"appartement",ville:"Manosque",code_postal:"04100",surface:68,nb_pieces:3,prix:155000,description:"T3 lumineux, balcon sud, proche centre",photo_url:"https://images.proprietes-privees.com/annonce/425538TPH/PROPRIETES-PRIVEES-425538TPH-1.jpg",url_pp:"https://www.proprietes-privees.com/annonces/exemple2"}
+  ],
+  matchs_externes: [
+    {id:"ME001",bien_externe_id:"EXT001",acquereur_id:"C002",statut:"suggere",notes:"",date_creation:"2026-03-28 14:00",fiche_envoyee:false,match_confirme:false},
+    {id:"ME002",bien_externe_id:"EXT002",acquereur_id:"C003",statut:"contacte",notes:"Marie interesse, a appeler Alexandra",date_creation:"2026-03-29 09:00",fiche_envoyee:true,match_confirme:false}
+  ],
+  visites: [
+    {id:"V001",bien_id:"B004",acquereur_id:"C002",type:"denonce",date_visite:"2026-03-25 14:00",contenu:"Visite programmee avec M. et Mme DUPONT pour la maison plain-pied a Manosque",date_creation:"2026-03-24 10:00"},
+    {id:"V002",bien_id:"B001",acquereur_id:"C004",type:"compte_rendu",date_visite:"2026-03-22 10:00",contenu:"Pierre MARTIN a visite la maison d'architecte a Ginasservis. Tres interesse par la piscine et la proximite ITER. Souhaite revenir avec sa femme. Point negatif : prix au-dessus du budget ideal. A relancer.",date_creation:"2026-03-22 11:30"}
+  ],
+  stats: { total_contacts:5, acquereurs_actifs:3, vendeurs_actifs:2, biens_disponibles:6, biens_sous_compromis:2, biens_vendus:0, matchs_en_cours:3 },
+  last_sync: "2026-03-30 06:15"
+};
+
+let D = null, ch1=null;
+
+// === HELPERS ===
+function gc(id) { return (D.contacts||[]).find(c=>c.id===id); }
+function gb(id) { return (D.biens||[]).find(b=>b.id===id); }
+function ga(id) { return (D.agents||[]).find(a=>a.id===id); }
+function entityName(type, id) {
+  if (type==='contact') { const c=gc(id); return c ? `${c.prenom} ${c.nom}` : id; }
+  if (type==='bien') { const b=gb(id); return b ? `${b.type_bien} - ${b.ville} (${fPrix(b.prix)})` : id; }
+  return id;
+}
+function biensForVendeur(cid) { return (D.biens||[]).filter(b=>b.vendeur_id===cid); }
+function fPrix(v) { const n=Number(v); return n ? n.toLocaleString('fr-FR')+' EUR' : '-'; }
+function tBadge(t) {
+  const m={acquereur:['Acquereur','b-blue'],vendeur:['Vendeur','b-gold'],les_deux:['Acq+Vend','b-pink']};
+  const [l,c]=m[t]||[t,'b-gray']; return `<span class="badge ${c}">${l}</span>`;
+}
+function sBadge(s) {
+  const m={actif:['Actif','b-green'],en_pause:['Pause','b-orange'],archive:['Archive','b-gray']};
+  const [l,c]=m[s]||[s,'b-gray']; return `<span class="badge ${c}"><span class="dot dot-${c==='b-green'?'green':c==='b-orange'?'orange':'red'}"></span>${l}</span>`;
+}
+function sbBadge(s) {
+  const m={disponible:['Disponible','b-green','green'],sous_compromis:['Compromis','b-orange','orange'],vendu:['Vendu','b-red','red'],archive:['Archive','b-gray','red']};
+  const [l,c,d]=m[s]||[s,'b-gray','red']; return `<span class="badge ${c}"><span class="dot dot-${d}"></span>${l}</span>`;
+}
+function msBadge(s) {
+  const m={suggere:['Suggere','b-blue'],contacte:['Contacte','b-orange'],visite:['Visite','b-green'],refuse:['Refuse','b-red'],accepte:['Accepte','b-green']};
+  const [l,c]=m[s]||[s,'b-gray']; return `<span class="badge ${c}">${l}</span>`;
+}
+
+// === INIT ===
+async function init() {
+  try {
+    if (WEBHOOK_URL && !WEBHOOK_URL.includes('REMPLACER')) { D = await (await fetch(WEBHOOK_URL)).json(); }
+    else D = DEMO_DATA;
+  } catch(e) { D = DEMO_DATA; }
+  if (!D.rappels) D.rappels = [];
+  if (!D.biens_externes) D.biens_externes = [];
+  if (!D.matchs_externes) D.matchs_externes = [];
+  if (!D.visites) D.visites = [];
+  document.getElementById('nav-contacts').textContent = D.contacts.length;
+  document.getElementById('nav-biens').textContent = D.biens.length;
+  document.getElementById('nav-matchs').textContent = D.matchs.length;
+  document.getElementById('nav-ext').textContent = D.matchs_externes.length;
+  document.getElementById('nav-journal').textContent = D.notes.length;
+  const activeRappels = D.rappels.filter(r=>r.statut==='actif').length;
+  document.getElementById('nav-rappels').textContent = activeRappels;
+  document.getElementById('nav-visites').textContent = D.visites.length;
+  if (D.last_sync) document.getElementById('sync-time').textContent = 'Sync ' + D.last_sync;
+  renderAll();
+}
+
+// === NAV ===
+function showView(name, btn) {
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('view-'+name).classList.add('active');
+  btn.classList.add('active');
+}
+function toggleTheme() { const d=document.documentElement; d.setAttribute('data-theme', d.getAttribute('data-theme')==='dark'?'':'dark'); }
+
+// === DASHBOARD ===
+function renderDashboard() {
+  const s=D.stats||{};
+  document.getElementById('kpi-acq').textContent=s.acquereurs_actifs||0;
+  document.getElementById('kpi-biens').textContent=s.biens_disponibles||0;
+  document.getElementById('kpi-matchs').textContent=s.matchs_en_cours||0;
+  document.getElementById('kpi-vendus').textContent=s.biens_vendus||0;
+
+  if(ch1)ch1.destroy();
+  ch1=new Chart(document.getElementById('chart-statut'),{type:'doughnut',data:{labels:['Disponibles','Sous compromis','Vendus'],datasets:[{data:[s.biens_disponibles||0,s.biens_sous_compromis||0,s.biens_vendus||0],backgroundColor:['#10b981','#f59e0b','#ef4444'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{position:'bottom',labels:{padding:12,usePointStyle:true,pointStyle:'circle'}}}}});
+
+  // Pipeline recap
+  const totalBiens=(D.biens||[]).length;
+  const activeRappels=(D.rappels||[]).filter(r=>r.statut==='actif').length;
+  const totalVisites=(D.visites||[]).length;
+  const totalMatchsExt=(D.matchs_externes||[]).length;
+  document.getElementById('pipeline-recap').innerHTML=`
+    <div style="display:flex;flex-direction:column;gap:0.8rem">
+      <div style="display:flex;align-items:center;gap:0.8rem"><div style="width:36px;height:36px;border-radius:6px;background:var(--green-light);color:var(--green);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.1rem">${s.biens_disponibles||0}</div><div><div style="font-weight:600;font-size:0.85rem">Disponibles</div><div style="font-size:0.72rem;color:var(--text-muted)">en portefeuille</div></div></div>
+      <div style="display:flex;align-items:center;gap:0.8rem"><div style="width:36px;height:36px;border-radius:6px;background:var(--orange-light);color:var(--orange);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.1rem">${s.biens_sous_compromis||0}</div><div><div style="font-weight:600;font-size:0.85rem">Sous compromis</div><div style="font-size:0.72rem;color:var(--text-muted)">en cours de vente</div></div></div>
+      <div style="display:flex;align-items:center;gap:0.8rem"><div style="width:36px;height:36px;border-radius:6px;background:var(--red-light);color:var(--red);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.1rem">${s.biens_vendus||0}</div><div><div style="font-weight:600;font-size:0.85rem">Vendus</div><div style="font-size:0.72rem;color:var(--text-muted)">finalises</div></div></div>
+      <div style="border-top:1px solid var(--border);padding-top:0.6rem;margin-top:0.2rem;display:flex;gap:1.5rem">
+        <div><span style="font-weight:700;color:var(--pp-pink)">${s.matchs_en_cours||0}</span> <span style="font-size:0.75rem;color:var(--text-muted)">matchs</span></div>
+        <div><span style="font-weight:700;color:var(--blue)">${totalVisites}</span> <span style="font-size:0.75rem;color:var(--text-muted)">visites</span></div>
+        <div><span style="font-weight:700;color:var(--orange)">${activeRappels}</span> <span style="font-size:0.75rem;color:var(--text-muted)">rappels</span></div>
+      </div>
+    </div>
+  `;
+
+  // Timeline recente
+  const tl=document.getElementById('dashboard-timeline');
+  const sorted=[...(D.notes||[])].sort((a,b)=>(b.date_creation||'').localeCompare(a.date_creation||'')).slice(0,6);
+  tl.innerHTML=sorted.map(n=>{
+    const name=entityName(n.type_entite,n.entite_id);
+    const isRappel=n.contenu.toUpperCase().includes('RAPPEL');
+    const dotColor=n.type_entite==='contact'?'pink':'blue';
+    return `<div class="tl-item"><div class="tl-dot ${dotColor}"></div><div class="tl-date">${n.date_creation}</div><span class="tl-entity">${name}</span><div class="tl-text">${n.contenu}</div>${isRappel?'<div class="tl-rappel"><svg style="width:12px;height:12px;vertical-align:middle;margin-right:3px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>Rappel</div>':''}</div>`;
+  }).join('');
+}
+
+// === CONTACTS ===
+function renderContacts() {
+  const tf=document.getElementById('f-ct').value, sf=document.getElementById('f-cs').value;
+  let list=[...(D.contacts||[])];
+  if(tf)list=list.filter(c=>c.type===tf);
+  if(sf)list=list.filter(c=>c.statut===sf);
+  list.sort((a,b)=>String(a.nom||'').localeCompare(String(b.nom||'')));
+  const box=document.getElementById('tb-contacts');
+  if(!list.length){box.innerHTML='<p style="color:var(--text-muted)">Aucun contact.</p>';return;}
+  box.innerHTML=list.map(c=>{
+    const biens=biensForVendeur(c.id);
+    const notes=(D.notes||[]).filter(n=>n.entite_id===c.id).length;
+    const matchs=(D.matchs||[]).filter(m=>m.acquereur_id===c.id).length;
+    const projetLabel={residence_principale:'RP',residence_secondaire:'RS',investissement:'Invest.'};
+    return `<div class="note-card" style="border-left-color:${c.type==='acquereur'?'var(--blue)':c.type==='vendeur'?'var(--gold)':'var(--pp-pink)'};padding:0.8rem 1rem;cursor:pointer;margin-bottom:0.6rem" onclick="showContactModal('${c.id}')">
+      <div style="display:flex;justify-content:space-between;align-items:start">
+        <div>
+          <div style="font-weight:700;font-size:0.95rem">${c.prenom} ${c.nom}</div>
+          <div style="display:flex;gap:0.4rem;margin:0.3rem 0;flex-wrap:wrap">${tBadge(c.type)} ${sBadge(c.statut)} ${c.projet?'<span class="badge b-gray">'+projetLabel[c.projet]+'</span>':''}</div>
+          <div style="font-size:0.78rem;color:var(--text-secondary)">${c.telephone||''} ${c.email?'- '+c.email:''}</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          ${c.budget_ideal?`<div style="font-weight:700;color:var(--pp-pink);font-size:0.9rem">${fPrix(c.budget_ideal)}</div>`:''}
+          <div style="font-size:0.7rem;color:var(--text-muted)">${notes?notes+' note'+(notes>1?'s':''):''} ${matchs?'- '+matchs+' match'+(matchs>1?'s':''):''}</div>
+        </div>
+      </div>
+      ${c.villes_souhaitees?`<div style="font-size:0.75rem;color:var(--text-muted);margin-top:0.3rem">Secteur : ${c.villes_souhaitees}</div>`:''}
+      ${biens.length?`<div style="margin-top:0.3rem;display:flex;gap:0.3rem;flex-wrap:wrap">${biens.map(b=>`<span class="badge b-pink" onclick="event.stopPropagation();showBienModal('${b.id}')">${b.type_bien} ${b.ville}</span>`).join('')}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+// === BIENS ===
+function renderBiens() {
+  const sf=document.getElementById('f-bs').value,tf=document.getElementById('f-bt').value,vf=(document.getElementById('f-bv').value||'').toLowerCase();
+  let list=[...(D.biens||[])];
+  if(sf)list=list.filter(b=>b.statut===sf);
+  if(tf)list=list.filter(b=>b.type_bien===tf);
+  if(vf)list=list.filter(b=>(b.ville||'').toLowerCase().includes(vf));
+  list.sort((a,b)=>(Number(b.prix)||0)-(Number(a.prix)||0));
+  const box=document.getElementById('tb-biens');
+  if(!list.length){box.innerHTML='<p style="color:var(--text-muted)">Aucun bien.</p>';return;}
+  box.innerHTML=list.map(b=>{
+    const vendeur=b.vendeur_id?gc(b.vendeur_id):null;
+    const nbVisites=(D.visites||[]).filter(v=>v.bien_id===b.id).length;
+    const nbMatchs=(D.matchs||[]).filter(m=>m.bien_id===b.id).length;
+    return `<div class="note-card" style="border-left-color:${b.statut==='disponible'?'var(--green)':b.statut==='sous_compromis'?'var(--orange)':'var(--red)'};padding:0;cursor:pointer;margin-bottom:0.8rem;overflow:hidden" onclick="showBienModal('${b.id}')">
+      <div style="display:flex">
+        ${b.photo_url?`<img src="${b.photo_url}" style="width:130px;min-height:100px;object-fit:cover;flex-shrink:0" onerror="this.style.display='none'">`:''}
+        <div style="padding:0.8rem 1rem;flex:1;min-width:0">
+          <div style="display:flex;justify-content:space-between;align-items:start">
+            <div>
+              <div style="font-weight:700;font-size:0.9rem">${b.type_bien} - ${b.ville}</div>
+              <div style="font-size:0.78rem;color:var(--text-secondary);margin:0.15rem 0">${b.surface?b.surface+'m2':''}${b.nb_pieces?' - '+b.nb_pieces+'p':''}${b.nb_chambres?' - '+b.nb_chambres+'ch':''}</div>
+            </div>
+            <div style="font-weight:800;color:var(--pp-pink);font-size:1rem;flex-shrink:0;margin-left:0.5rem">${fPrix(b.prix)}</div>
+          </div>
+          <div style="font-size:0.75rem;color:var(--text-muted);margin:0.2rem 0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${b.description||''}</div>
+          <div style="display:flex;gap:0.4rem;margin-top:0.4rem;flex-wrap:wrap;align-items:center">
+            ${sbBadge(b.statut)}
+            ${vendeur?`<span class="badge b-gold" onclick="event.stopPropagation();showContactModal('${vendeur.id}')">${vendeur.prenom} ${vendeur.nom}</span>`:''}
+            ${nbVisites?`<span class="badge b-blue"><svg style="width:10px;height:10px;margin-right:2px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>${nbVisites} visite${nbVisites>1?'s':''}</span>`:''}
+            ${nbMatchs?`<span class="badge b-pink">${nbMatchs} match${nbMatchs>1?'s':''}</span>`:''}
+            ${b.partage&&b.partage!=='prive'?`<span class="badge b-blue">${b.partage==='reseau'?'Reseau':'Public'}</span>`:''}
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// === MATCHS ===
+function renderMatchs() {
+  const sf=document.getElementById('f-ms').value;
+  let list=[...(D.matchs||[])];
+  if(sf)list=list.filter(m=>m.statut===sf);
+  const byB={};list.forEach(m=>{if(!byB[m.bien_id])byB[m.bien_id]=[];byB[m.bien_id].push(m);});
+  const box=document.getElementById('matchs-box');
+  if(!Object.keys(byB).length){box.innerHTML='<p style="color:var(--text-muted)">Aucun match.</p>';return;}
+  box.innerHTML=Object.entries(byB).map(([bid,ms])=>{
+    const b=gb(bid);
+    if(!b)return '';
+    return `<div class="note-card" style="border-left-color:var(--green);padding:1rem;margin-bottom:1rem">
+      <div style="display:flex;gap:1rem;align-items:start">
+        ${b.photo_url?`<img src="${b.photo_url}" style="width:110px;height:75px;object-fit:cover;border-radius:4px;flex-shrink:0" onerror="this.style.display='none'">`:''}
+        <div style="flex:1">
+          <div style="font-weight:700;font-size:0.9rem">${b.type_bien} - ${b.ville} (${fPrix(b.prix)})</div>
+          <div style="font-size:0.78rem;color:var(--text-secondary);margin:0.15rem 0">${b.surface?b.surface+'m2':''} ${b.nb_pieces?'- '+b.nb_pieces+'p':''} — ${b.description?b.description.substring(0,80)+'...':''}</div>
+          <div style="margin-top:0.6rem;display:flex;flex-direction:column;gap:0.5rem">${ms.map(m=>{
+            const a=gc(m.acquereur_id);
+            return `<div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;padding:0.4rem 0;border-top:1px solid var(--border)">
+              <span class="badge b-pink">${a?a.prenom+' '+a.nom:m.acquereur_id}</span>
+              ${m.type_match==='strict'?'<span class="badge b-green">Strict</span>':'<span class="badge b-orange">Souple</span>'}
+              <select class="edit-select" onchange="saveSelect('match','${m.id}','statut',this.value)" style="font-size:0.75rem">${['suggere','contacte','visite','refuse','accepte'].map(s=>`<option value="${s}" ${m.statut===s?'selected':''}>${s.charAt(0).toUpperCase()+s.slice(1)}</option>`).join('')}</select>
+              ${m.notes?`<span style="font-size:0.75rem;color:var(--text-muted)">${m.notes}</span>`:''}
+            </div>`;
+          }).join('')}</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// === JOURNAL ===
+function renderJournal() {
+  const tl=document.getElementById('journal-timeline');
+  const sorted=[...(D.notes||[])].sort((a,b)=>(b.date_creation||'').localeCompare(a.date_creation||''));
+  let html=`<div style="margin-bottom:1rem"><button class="action-btn pink" onclick="promptCreate('note')"><svg style="width:12px;height:12px;margin-right:3px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Ajouter une entree</button></div>`;
+  html+=sorted.map(n=>{
+    const name=entityName(n.type_entite,n.entite_id);
+    const isRappel=n.contenu.toUpperCase().includes('RAPPEL');
+    const dotColor=isRappel?'orange':n.type_entite==='contact'?'pink':'blue';
+    return `<div class="tl-item"><div class="tl-dot ${dotColor}"></div><div class="tl-date">${n.date_creation}</div><span class="tl-entity">${name}</span><div class="tl-text">${n.contenu}</div>${isRappel?'<div class="tl-rappel"><svg style="width:12px;height:12px;vertical-align:middle;margin-right:3px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>Rappel</div>':''}</div>`;
+  }).join('');
+  tl.innerHTML=html;
+}
+
+// === NOTES ===
+function renderNotes() {
+  const tf=document.getElementById('f-nt').value;
+  let list=[...(D.notes||[])].sort((a,b)=>(b.date_creation||'').localeCompare(a.date_creation||''));
+  if(tf)list=list.filter(n=>n.type_entite===tf);
+  const box=document.getElementById('notes-box');
+  let html=`<div style="margin-bottom:1rem"><button class="action-btn pink" onclick="promptCreate('note')"><svg style="width:12px;height:12px;margin-right:3px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Nouvelle note</button></div>`;
+  html+=list.map(n=>{
+    const name=entityName(n.type_entite,n.entite_id);
+    const typeBadge=n.type_entite==='contact'?'<span class="badge b-pink">Contact</span>':'<span class="badge b-blue">Bien</span>';
+    return `<div class="note-card" style="display:flex;align-items:start;justify-content:space-between"><div style="flex:1"><div class="nc-date">${n.date_creation} ${typeBadge} <strong>${name}</strong></div><div class="nc-text">${n.contenu}</div></div><div style="display:flex;gap:0.3rem;flex-shrink:0;margin-left:0.5rem"><button class="action-btn gray" onclick="editItemContent('note','${n.id}')" style="padding:0.3rem 0.5rem" title="Modifier"><svg style="width:12px;height:12px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button><button class="action-btn gray" onclick="deleteItem('note','${n.id}')" style="padding:0.3rem 0.5rem;color:var(--red)" title="Supprimer"><svg style="width:12px;height:12px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button></div></div>`;
+  }).join('');
+  box.innerHTML=html;
+}
+
+// === MODALS ===
+function showContactModal(id) {
+  const c=gc(id);if(!c)return;
+  const notes=(D.notes||[]).filter(n=>n.entite_id===id).sort((a,b)=>(b.date_creation||'').localeCompare(a.date_creation||''));
+  const biens=biensForVendeur(id);
+  const matchs=(D.matchs||[]).filter(m=>m.acquereur_id===id);
+  let h='';
+  // Action bar
+  h+=`<div class="action-bar">`;
+  h+=selectField('Statut',c.statut,'contact',id,'statut',[{v:'actif',l:'Actif'},{v:'en_pause',l:'En pause'},{v:'archive',l:'Archive'}]).replace('<div class="field">','').replace('</div></div>','</div>');
+  if(c.statut!=='archive') h+=`<button class="action-btn gray" onclick="quickAction('archive_contact','${id}')">Archiver</button>`;
+  h+=`</div>`;
+  h+=`<div class="field"><div class="field-label">Type</div><div class="field-value">${tBadge(c.type)}</div></div>`;
+  h+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem">`;
+  h+=editableField('Telephone',c.telephone||'','contact',id,'telephone','tel');
+  h+=editableField('Email',c.email||'','contact',id,'email','email');
+  h+=`</div>`;
+  h+=editableField('Villes souhaitees',c.villes_souhaitees||'','contact',id,'villes_souhaitees');
+  h+=editableField('Anniversaire',c.date_anniversaire||'','contact',id,'date_anniversaire','date');
+  if(c.type==='acquereur'||c.type==='les_deux'){
+    h+=selectField('Projet',c.projet||'','contact',id,'projet',[{v:'',l:'-'},{v:'residence_principale',l:'Residence principale'},{v:'residence_secondaire',l:'Residence secondaire'},{v:'investissement',l:'Investissement locatif'}]);
+    h+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem">`;
+    h+=editableField('Budget ideal',c.budget_ideal||'','contact',id,'budget_ideal','number');
+    h+=editableField('Budget max',c.budget_max||'','contact',id,'budget_max','number');
+    h+=`</div>`;
+    h+=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.5rem">`;
+    h+=editableField('Surface min',c.surface_min||'','contact',id,'surface_min','number');
+    h+=editableField('Pieces min',c.nb_pieces_min||'','contact',id,'nb_pieces_min','number');
+    h+=editableField('Chambres min',c.nb_chambres_min||'','contact',id,'nb_chambres_min','number');
+    h+=`</div>`;
+    h+=editableField('Type bien',c.type_bien_recherche||'','contact',id,'type_bien_recherche');
+    h+=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.5rem">`;
+    h+=editableField('Terrain min (m2)',c.surface_terrain_min||'','contact',id,'surface_terrain_min','number');
+    h+=selectField('Fibre',c.fibre||'','contact',id,'fibre',[{v:'',l:'-'},{v:'oui',l:'Oui'},{v:'non',l:'Non'},{v:'indifferent',l:'Indifferent'}]);
+    h+=selectField('Assainissement',c.assainissement||'','contact',id,'assainissement',[{v:'',l:'-'},{v:'tout_egout',l:'Tout-a-l\'egout'},{v:'fosse',l:'Fosse'},{v:'indifferent',l:'Indifferent'}]);
+    h+=`</div>`;
+    h+=editableField('Annee construction min',c.annee_construction_min||'','contact',id,'annee_construction_min','number');
+  }
+  if(biens.length){
+    h+=`<div class="section-title">Biens en vente (${biens.length})</div>`;
+    biens.forEach(b=>{h+=`<div class="note-card" style="cursor:pointer;border-left-color:var(--gold)" onclick="closeModal();setTimeout(()=>showBienModal('${b.id}'),200)"><div class="nc-date">${b.id} - ${sbBadge(b.statut)}</div><div class="nc-text">${b.type_bien} a ${b.ville} - ${fPrix(b.prix)}</div></div>`;});
+  }
+  if(matchs.length){
+    h+=`<div class="section-title">Matchs (${matchs.length})</div>`;
+    matchs.forEach(m=>{const b=gb(m.bien_id);
+      h+=`<div class="note-card" style="border-left-color:var(--green);display:flex;align-items:center;justify-content:space-between">`;
+      h+=`<div><div class="nc-date">${m.type_match==='strict'?'<span class="badge b-green">Strict</span>':'<span class="badge b-orange">Souple</span>'}</div><div class="nc-text">${b?b.type_bien+' a '+b.ville+' - '+fPrix(b.prix):m.bien_id}</div></div>`;
+      h+=`<select class="edit-select" onchange="saveSelect('match','${m.id}','statut',this.value)" style="font-size:0.75rem">${['suggere','contacte','visite','refuse','accepte'].map(s=>`<option value="${s}" ${m.statut===s?'selected':''}>${s.charAt(0).toUpperCase()+s.slice(1)}</option>`).join('')}</select>`;
+      h+=`</div>`;
+    });
+  }
+  if(notes.length){
+    h+=`<div class="section-title">Notes (${notes.length})</div>`;
+    notes.forEach(n=>{h+=`<div class="note-card"><div class="nc-date">${n.date_creation}</div><div class="nc-text">${n.contenu}</div></div>`;});
+  }
+  document.getElementById('modal-title').textContent=`${c.prenom} ${c.nom} (${c.id})`;
+  document.getElementById('modal-body').innerHTML=h;
+  document.getElementById('modal-bg').classList.add('active');
+}
+
+function showBienModal(id) {
+  const b=gb(id);if(!b)return;
+  const vendeur=b.vendeur_id?gc(b.vendeur_id):null;
+  const notes=(D.notes||[]).filter(n=>n.entite_id===id).sort((a,b)=>(b.date_creation||'').localeCompare(a.date_creation||''));
+  const matchs=(D.matchs||[]).filter(m=>m.bien_id===id);
+  let h='';
+  // Photo
+  if(b.photo_url) h+=`<div style="margin:-1.5rem -1.5rem 1rem;border-radius:0"><img src="${b.photo_url}" alt="${b.type_bien}" style="width:100%;max-height:220px;object-fit:cover;border-radius:0" onerror="this.parentElement.remove()"></div>`;
+  // Action bar
+  h+=`<div class="action-bar">`;
+  h+=selectField('Statut',b.statut,'bien',id,'statut',[{v:'disponible',l:'Disponible'},{v:'sous_compromis',l:'Sous compromis'},{v:'vendu',l:'Vendu'},{v:'archive',l:'Archive'}]).replace('<div class="field">','').replace('</div></div>','</div>');
+  if(b.statut==='disponible') h+=`<button class="action-btn orange" onclick="crmEdit('update_bien','${id}',{statut:'sous_compromis'}).then(ok=>{if(ok){renderDashboard();renderBiens();showBienModal('${id}');}})">Sous compromis</button>`;
+  if(b.statut!=='vendu') h+=`<button class="action-btn pink" onclick="quickAction('archive_bien','${id}')">Vendu</button>`;
+  if(b.url_pp) h+=`<a href="${b.url_pp}" target="_blank" class="action-btn gray" style="margin-left:auto;text-decoration:none"><svg style="width:12px;height:12px;margin-right:3px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Voir sur PP</a>`;
+  h+=`</div>`;
+  // Partage
+  const partage = b.partage || 'prive';
+  h+=`<div class="field" style="display:flex;align-items:center;gap:0.8rem"><div class="field-label" style="margin:0">Partage</div>`;
+  h+=`<select class="edit-select" onchange="saveSelect('bien','${id}','partage',this.value)" style="font-size:0.75rem">${[{v:'prive',l:'Prive'},{v:'reseau',l:'Reseau'},{v:'public',l:'Public'}].map(o=>`<option value="${o.v}" ${o.v===partage?'selected':''}>${o.l}</option>`).join('')}</select>`;
+  h+=`${partage==='prive'?'<span class="badge b-gray">Non partage</span>':partage==='reseau'?'<span class="badge b-blue">Visible reseau</span>':'<span class="badge b-green">Public</span>'}</div>`;
+  // Infos
+  h+=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.5rem">`;
+  h+=editableField('Prix',b.prix||'','bien',id,'prix','number');
+  h+=editableField('Surface',b.surface||'','bien',id,'surface','number');
+  h+=editableField('Pieces',b.nb_pieces||'','bien',id,'nb_pieces','number');
+  h+=`</div>`;
+  h+=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.5rem">`;
+  h+=editableField('Chambres',b.nb_chambres||'','bien',id,'nb_chambres','number');
+  h+=editableField('Terrain (m2)',b.surface_terrain||'','bien',id,'surface_terrain','number');
+  h+=editableField('Annee',b.annee_construction||'','bien',id,'annee_construction','number');
+  h+=`</div>`;
+  h+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem">`;
+  h+=selectField('Fibre',b.fibre||'','bien',id,'fibre',[{v:'',l:'-'},{v:'oui',l:'Oui'},{v:'non',l:'Non'}]);
+  h+=selectField('Assainissement',b.assainissement||'','bien',id,'assainissement',[{v:'',l:'-'},{v:'tout_egout',l:'Tout-a-l\'egout'},{v:'fosse',l:'Fosse'}]);
+  h+=`</div>`;
+  h+=`<div class="field"><div class="field-label">Localisation</div><div class="field-value">${b.ville} ${b.code_postal}${b.adresse?' - '+b.adresse:''}</div></div>`;
+  h+=editableField('Description',b.description||'','bien',id,'description');
+  if(vendeur)h+=`<div class="field"><div class="field-label">Vendeur</div><div class="field-value"><span class="badge b-gold" style="cursor:pointer" onclick="closeModal();setTimeout(()=>showContactModal('${vendeur.id}'),200)">${vendeur.prenom} ${vendeur.nom} (${vendeur.id})</span></div></div>`;
+  if(matchs.length){
+    h+=`<div class="section-title">Matchs (${matchs.length})</div>`;
+    matchs.forEach(m=>{const a=gc(m.acquereur_id);
+      h+=`<div class="note-card" style="border-left-color:var(--green);display:flex;align-items:center;justify-content:space-between">`;
+      h+=`<div><div class="nc-date">${m.type_match==='strict'?'<span class="badge b-green">Strict</span>':'<span class="badge b-orange">Souple</span>'}</div><div class="nc-text">${a?a.prenom+' '+a.nom:m.acquereur_id}</div></div>`;
+      h+=`<select class="edit-select" onchange="saveSelect('match','${m.id}','statut',this.value)" style="font-size:0.75rem">${['suggere','contacte','visite','refuse','accepte'].map(s=>`<option value="${s}" ${m.statut===s?'selected':''}>${s.charAt(0).toUpperCase()+s.slice(1)}</option>`).join('')}</select>`;
+      h+=`</div>`;
+    });
+  }
+  if(notes.length){
+    h+=`<div class="section-title">Notes (${notes.length})</div>`;
+    notes.forEach(n=>{h+=`<div class="note-card"><div class="nc-date">${n.date_creation}</div><div class="nc-text">${n.contenu}</div></div>`;});
+  }
+  document.getElementById('modal-title').textContent=`${b.type_bien} - ${b.ville} (${b.id})`;
+  document.getElementById('modal-body').innerHTML=h;
+  document.getElementById('modal-bg').classList.add('active');
+}
+
+// === RENDER ALL ===
+function renderAll() { renderDashboard(); renderContacts(); renderBiens(); renderMatchs(); renderMatchExt(); renderVisites(); renderJournal(); renderNotes(); renderRappels(); }
+
+// === VISITES ===
+function renderVisites() {
+  if (!D.visites) D.visites = [];
+  const tf = document.getElementById('f-vt').value;
+  let list = [...D.visites].sort((a,b)=>(b.date_visite||'').localeCompare(a.date_visite||''));
+  if (tf) list = list.filter(v=>v.type===tf);
+  const box = document.getElementById('visites-box');
+  let html = `<div style="margin-bottom:1rem"><button class="action-btn pink" onclick="promptCreateVisite()"><svg style="width:12px;height:12px;margin-right:3px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Nouvelle visite</button></div>`;
+  if (!list.length) { box.innerHTML = html+'<p style="color:var(--text-muted)">Aucune visite.</p>'; return; }
+  html += list.map(v => {
+    const bien = gb(v.bien_id);
+    const acq = gc(v.acquereur_id);
+    const typeBadge = v.type==='denonce' ? '<span class="badge b-orange">Denonciation</span>' : '<span class="badge b-blue">Compte-rendu</span>';
+    const bienLabel = bien ? `${bien.type_bien} - ${bien.ville} (${fPrix(bien.prix)})` : v.bien_id;
+    const acqLabel = acq ? `${acq.prenom} ${acq.nom}` : v.acquereur_id;
+    return `<div class="note-card" style="border-left-color:${v.type==='denonce'?'var(--orange)':'var(--blue)'}">
+      <div class="nc-date">${v.date_visite} ${typeBadge}</div>
+      <div style="display:flex;gap:0.5rem;margin:0.3rem 0;flex-wrap:wrap"><span class="badge b-pink">${acqLabel}</span> <span style="color:var(--text-muted)">→</span> <span class="badge b-gold">${bienLabel}</span></div>
+      <div class="nc-text">${v.contenu}</div>
+    </div>`;
+  }).join('');
+  box.innerHTML = html;
+}
+
+function promptCreateVisite() {
+  const formHtml=`<div class="field"><div class="field-label">Type</div><select class="edit-select" id="form-vtype" style="width:100%"><option value="denonce">Denonciation de visite</option><option value="compte_rendu">Compte-rendu de visite</option></select></div>
+  <div class="field"><div class="field-label">Bien concerne</div><select class="edit-select" id="form-vbien" style="width:100%">${bienOptions()}</select></div>
+  <div class="field"><div class="field-label">Acquereur</div><select class="edit-select" id="form-vacq" style="width:100%">${acqOptions()}</select></div>
+  <div class="field"><div class="field-label">Date de la visite</div><input class="edit-input" id="form-vdate" type="datetime-local" style="max-width:250px"></div>
+  <div class="field"><div class="field-label">Description / Compte-rendu</div><textarea class="edit-input" id="form-vcontenu" rows="4" style="max-width:100%;width:100%" placeholder="Decrivez la visite ou le retour du client..."></textarea></div>
+  <button class="action-btn pink" onclick="submitVisite()">Enregistrer</button>`;
+  document.getElementById('modal-title').textContent='Nouvelle visite';
+  document.getElementById('modal-body').innerHTML=formHtml;
+  document.getElementById('modal-bg').classList.add('active');
+}
+
+function submitVisite(){
+  const type=document.getElementById('form-vtype').value;
+  const bienId=document.getElementById('form-vbien').value;
+  const acqId=document.getElementById('form-vacq').value;
+  const dateV=document.getElementById('form-vdate').value.replace('T',' ');
+  const contenu=document.getElementById('form-vcontenu').value.trim();
+  if(!contenu){toast('Description vide',false);return;}
+  const id='V'+(D.visites.length+1).toString().padStart(3,'0');
+  const now=new Date().toISOString().slice(0,16).replace('T',' ');
+  D.visites.push({id,bien_id:bienId,acquereur_id:acqId,type,date_visite:dateV||now,contenu,date_creation:now});
+  document.getElementById('nav-visites').textContent=D.visites.length;
+  toast('Visite enregistree (demo)');
+  closeModal();
+  renderAll();
+}
+
+// === MATCHS EXTERNES ===
+function renderMatchExt() {
+  const box=document.getElementById('matchext-box');
+  const list=D.matchs_externes||[];
+  // Filtre agent
+  const agents=D.agents||[];
+  const agentFilter=document.getElementById('f-mea');
+  if(agentFilter && !agentFilter.options.length){
+    agentFilter.innerHTML='<option value="">Tous agents</option>'+agents.map(a=>`<option value="${a.id}">${a.prenom} ${a.nom}</option>`).join('');
+  }
+  const af=agentFilter?agentFilter.value:'';
+  let filtered=list;
+  if(af){filtered=filtered.filter(me=>{const be=(D.biens_externes||[]).find(b=>b.id===me.bien_externe_id);return be&&be.agent_id===af;});}
+  if(!filtered.length){box.innerHTML='<p style="color:var(--text-muted)">Aucun match externe.</p>';return;}
+  box.innerHTML=filtered.map(me=>{
+    const be=(D.biens_externes||[]).find(b=>b.id===me.bien_externe_id);
+    const acq=gc(me.acquereur_id);
+    const agent=be?ga(be.agent_id):null;
+    if(!be)return '';
+    return `<div class="note-card" style="border-left-color:var(--blue);padding:1rem;margin-bottom:1rem">
+      <div style="display:flex;gap:1rem;align-items:start">
+        <img src="${be.photo_url||''}" style="width:110px;height:75px;object-fit:cover;border-radius:4px;flex-shrink:0" onerror="this.style.display='none'">
+        <div style="flex:1">
+          <div style="font-weight:700;font-size:0.9rem">${be.type_bien} - ${be.ville} (${fPrix(be.prix)})</div>
+          <div style="font-size:0.78rem;color:var(--text-secondary);margin:0.15rem 0">${be.surface}m2 - ${be.nb_pieces}p — ${be.description}</div>
+          <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:0.4rem">Agent : <strong style="color:var(--blue)">${agent?agent.prenom+' '+agent.nom:'?'}</strong> ${agent?'('+agent.secteur+')':''}</div>
+          <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap">
+            <span class="badge b-pink">${acq?acq.prenom+' '+acq.nom:me.acquereur_id}</span>
+            <select class="edit-select" onchange="meUpdateStatut('${me.id}',this.value)" style="font-size:0.75rem">${['suggere','contacte','visite','refuse','accepte'].map(s=>`<option value="${s}" ${me.statut===s?'selected':''}>${s.charAt(0).toUpperCase()+s.slice(1)}</option>`).join('')}</select>
+            ${me.fiche_envoyee?'<span class="badge b-green" style="font-size:0.68rem">Fiche envoyee</span>':'<button class="action-btn pink" onclick="envoyerFicheExt(\''+me.id+'\')" style="font-size:0.72rem"><svg style="width:11px;height:11px;margin-right:3px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>Envoyer fiche</button>'}
+            ${me.match_confirme?'<span class="badge b-green" style="font-size:0.68rem">Match confirme</span>':'<button class="action-btn green" onclick="confirmMatch(\''+me.id+'\')" style="font-size:0.72rem"><svg style="width:11px;height:11px;margin-right:3px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Match</button>'}
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function meUpdateStatut(id,val){
+  const me=(D.matchs_externes||[]).find(m=>m.id===id);
+  if(me){me.statut=val;toast('Statut mis a jour (demo)');}
+}
+
+function confirmMatch(meId){
+  const me=(D.matchs_externes||[]).find(m=>m.id===meId);
+  if(!me)return;
+  const be=(D.biens_externes||[]).find(b=>b.id===me.bien_externe_id);
+  const acq=gc(me.acquereur_id);
+  const agent=be?ga(be.agent_id):null;
+  if(!confirm(`Confirmer le match ?\n\n${acq?acq.prenom+' '+acq.nom:'?'} → ${be?be.type_bien+' '+be.ville:'?'}\nAgent : ${agent?agent.prenom+' '+agent.nom:'?'}\n\nLes deux agents devront valider pour generer la convention.`))return;
+  me.match_confirme=true;
+  me.statut='accepte';
+  toast(`Match confirme ! En attente validation de ${agent?agent.prenom:'l\'agent'} (demo)`);
+  renderMatchExt();
+}
+
+function envoyerFicheExt(meId){
+  const me=(D.matchs_externes||[]).find(m=>m.id===meId);
+  if(!me)return;
+  const be=(D.biens_externes||[]).find(b=>b.id===me.bien_externe_id);
+  const acq=gc(me.acquereur_id);
+  const agent=be?ga(be.agent_id):null;
+  if(!be||!acq)return;
+  if(!confirm(`Envoyer la fiche du bien ${be.type_bien} a ${be.ville} a ${acq.prenom} ${acq.nom} ?\n\nUn email sera aussi envoye a ${agent?agent.prenom+' '+agent.nom:'l\'agent'} pour l'informer.`))return;
+  me.fiche_envoyee=true;
+  toast(`Fiche envoyee a ${acq.prenom} + notification a ${agent?agent.prenom:'l\'agent'} (demo)`);
+  renderMatchExt();
+}
+
+// === ENTITY PICKER ===
+function entityOptions() {
+  const contacts = (D.contacts||[]).map(c => `<option value="${c.id}">${c.prenom} ${c.nom} (${c.id})</option>`).join('');
+  const biens = (D.biens||[]).map(b => `<option value="${b.id}">${b.type_bien} - ${b.ville} ${fPrix(b.prix)} (${b.id})</option>`).join('');
+  return `<optgroup label="Contacts">${contacts}</optgroup><optgroup label="Biens">${biens}</optgroup>`;
+}
+function acqOptions() {
+  return (D.contacts||[]).filter(c=>(c.type==='acquereur'||c.type==='les_deux')&&c.statut==='actif').map(c => `<option value="${c.id}">${c.prenom} ${c.nom}</option>`).join('');
+}
+function bienOptions() {
+  return (D.biens||[]).filter(b=>b.statut==='disponible').map(b => `<option value="${b.id}">${b.type_bien} - ${b.ville} ${fPrix(b.prix)}</option>`).join('');
+}
+
+// === CRUD GENERIQUE ===
+function promptCreate(type){
+  let formHtml='';
+  if(type==='note'){
+    formHtml=`<div class="field"><div class="field-label">Contact ou Bien</div><select class="edit-select" id="form-entity" style="width:100%">${entityOptions()}</select></div>
+    <div class="field"><div class="field-label">Contenu</div><textarea class="edit-input" id="form-contenu" rows="3" style="max-width:100%;width:100%"></textarea></div>
+    <button class="action-btn pink" onclick="submitCreate('note')">Ajouter la note</button>`;
+  }
+  if(type==='rappel'){
+    formHtml=`<div class="field"><div class="field-label">Contact ou Bien</div><select class="edit-select" id="form-entity" style="width:100%">${entityOptions()}</select></div>
+    <div class="field"><div class="field-label">Contenu du rappel</div><textarea class="edit-input" id="form-contenu" rows="2" style="max-width:100%;width:100%"></textarea></div>
+    <div class="field"><div class="field-label">Date du rappel</div><input class="edit-input" id="form-date" type="date" style="max-width:200px"></div>
+    <button class="action-btn pink" onclick="submitCreate('rappel')">Creer le rappel</button>`;
+  }
+  document.getElementById('modal-title').textContent=type==='note'?'Nouvelle note':'Nouveau rappel';
+  document.getElementById('modal-body').innerHTML=formHtml;
+  document.getElementById('modal-bg').classList.add('active');
+}
+
+function submitCreate(type){
+  const entiteId=document.getElementById('form-entity').value;
+  const contenu=document.getElementById('form-contenu').value.trim();
+  if(!contenu){toast('Contenu vide',false);return;}
+  const typeEntite=entiteId.startsWith('B')?'bien':'contact';
+  const now=new Date().toISOString().slice(0,16).replace('T',' ');
+  if(type==='note'){
+    const id='N'+(D.notes.length+1).toString().padStart(3,'0');
+    D.notes.push({id,type_entite:typeEntite,entite_id:entiteId,contenu,date_creation:now});
+    document.getElementById('nav-journal').textContent=D.notes.length;
+    toast('Note ajoutee (demo)');
+  }
+  if(type==='rappel'){
+    const dateR=document.getElementById('form-date').value;
+    if(!dateR){toast('Date manquante',false);return;}
+    const id='R'+(D.rappels.length+1).toString().padStart(3,'0');
+    D.rappels.push({id,type_entite:typeEntite,entite_id:entiteId,contenu,date_rappel:dateR,statut:'actif',date_creation:now});
+    document.getElementById('nav-rappels').textContent=D.rappels.filter(r=>r.statut==='actif').length;
+    toast('Rappel cree (demo)');
+  }
+  closeModal();
+  renderAll();
+}
+
+function deleteItem(type,id){
+  if(!confirm('Supprimer ?'))return;
+  if(type==='note') D.notes=D.notes.filter(n=>n.id!==id);
+  if(type==='rappel') D.rappels=D.rappels.filter(r=>r.id!==id);
+  document.getElementById('nav-journal').textContent=D.notes.length;
+  document.getElementById('nav-rappels').textContent=D.rappels.filter(r=>r.statut==='actif').length;
+  toast('Supprime (demo)');
+  renderAll();
+}
+
+function editItemContent(type,id){
+  const newVal=prompt('Nouveau contenu :');
+  if(!newVal)return;
+  if(type==='note'){const n=D.notes.find(x=>x.id===id);if(n)n.contenu=newVal;}
+  if(type==='rappel'){const r=D.rappels.find(x=>x.id===id);if(r)r.contenu=newVal;}
+  toast('Modifie (demo)');
+  renderAll();
+}
+
+// === RAPPELS ===
+function renderRappels() {
+  const sf = document.getElementById('f-rs').value;
+  let list = [...(D.rappels||[])];
+  if (sf) list = list.filter(r => r.statut === sf);
+  list.sort((a,b) => (a.date_rappel||'').localeCompare(b.date_rappel||''));
+  const box = document.getElementById('rappels-box');
+  const today = new Date().toISOString().slice(0,10);
+  let html = `<div style="margin-bottom:1rem"><button class="action-btn pink" onclick="promptCreate('rappel')"><svg style="width:12px;height:12px;margin-right:3px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Nouveau rappel</button></div>`;
+  if (!list.length) { box.innerHTML = html+'<p style="color:var(--text-muted)">Aucun rappel.</p>'; return; }
+  html += list.map(r => {
+    const name = entityName(r.type_entite, r.entite_id);
+    const isLate = r.statut === 'actif' && r.date_rappel <= today;
+    const isDone = r.statut === 'fait';
+    const borderColor = isDone ? 'var(--green)' : isLate ? 'var(--red)' : 'var(--orange)';
+    const dateBadge = isLate ? '<span class="badge b-red" style="margin-left:0.4rem">En retard</span>' : isDone ? '<span class="badge b-green" style="margin-left:0.4rem">Fait</span>' : '<span class="badge b-orange" style="margin-left:0.4rem">A venir</span>';
+    return `<div class="note-card" style="border-left-color:${borderColor};display:flex;align-items:center;justify-content:space-between">
+      <div style="flex:1">
+        <div class="nc-date">${r.date_rappel} ${dateBadge}</div>
+        <div style="font-weight:600;color:var(--pp-pink);font-size:0.82rem;margin:0.2rem 0">${name}</div>
+        <div class="nc-text">${r.contenu}</div>
+      </div>
+      <div style="display:flex;gap:0.3rem;flex-shrink:0;margin-left:0.5rem">
+        ${r.statut==='actif'?`<button class="action-btn green" onclick="markRappelDone('${r.id}')">Fait</button>`:''}
+        <button class="action-btn gray" onclick="editItemContent('rappel','${r.id}')" style="padding:0.3rem 0.5rem" title="Modifier"><svg style="width:12px;height:12px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+        <button class="action-btn gray" onclick="deleteItem('rappel','${r.id}')" style="padding:0.3rem 0.5rem;color:var(--red)" title="Supprimer"><svg style="width:12px;height:12px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button>
+      </div>
+    </div>`;
+  }).join('');
+  box.innerHTML = html;
+}
+
+async function markRappelDone(id) {
+  const r = (D.rappels||[]).find(x=>x.id===id);
+  if (r) { r.statut = 'fait'; toast('Rappel marque comme fait (demo)'); }
+  const activeRappels = D.rappels.filter(r=>r.statut==='actif').length;
+  document.getElementById('nav-rappels').textContent = activeRappels;
+  renderRappels();
+}
+
+// === ENVOYER FICHE ===
+function envoyerFiche(bienId) {
+  const b = gb(bienId);
+  if (!b) return;
+  // Lister les acquereurs actifs qui pourraient etre interesses
+  const acqs = (D.contacts||[]).filter(c=>(c.type==='acquereur'||c.type==='les_deux')&&c.statut==='actif'&&c.email);
+  const opts = acqs.map(c => `<option value="${c.id}">${c.prenom} ${c.nom} (${c.email})</option>`).join('');
+  const html = `<div style="padding:1rem;background:var(--bg);border-radius:6px;margin-top:0.5rem" id="send-panel">
+    <div class="field-label">Envoyer la fiche a :</div>
+    <select class="edit-select" id="send-to" style="width:100%;margin:0.5rem 0">${opts}</select>
+    <div style="display:flex;gap:0.5rem;margin-top:0.5rem">
+      <button class="action-btn pink" onclick="confirmEnvoi('${bienId}')">Envoyer par email</button>
+      <button class="action-btn gray" onclick="document.getElementById('send-panel').remove()">Annuler</button>
+    </div>
+  </div>`;
+  // Inserer apres le bouton
+  const existing = document.getElementById('send-panel');
+  if (existing) { existing.remove(); return; }
+  document.querySelector('.modal-body').insertAdjacentHTML('beforeend', html);
+}
+
+function confirmEnvoi(bienId) {
+  const sel = document.getElementById('send-to');
+  if (!sel) return;
+  const contactId = sel.value;
+  const c = gc(contactId);
+  const b = gb(bienId);
+  toast(`Fiche ${bienId} envoyee a ${c?c.prenom+' '+c.nom:'?'} (demo)`);
+  document.getElementById('send-panel').remove();
+}
+
+function closeModal(){document.getElementById('modal-bg').classList.remove('active');}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+
+// === EDIT SYSTEM ===
+function toast(msg, ok=true) {
+  const t = document.createElement('div');
+  t.className = 'toast ' + (ok ? 'ok' : 'err');
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2500);
+}
+
+async function crmEdit(action, id, champs) {
+  if (IS_DEMO || EDIT_URL.includes('REMPLACER')) {
+    // Mode demo : maj locale
+    if (action === 'update_contact' || action === 'archive_contact') {
+      const c = gc(id);
+      if (c) Object.assign(c, champs || (action==='archive_contact' ? {statut:'archive'} : {}));
+    }
+    if (action === 'update_bien' || action === 'archive_bien') {
+      const b = gb(id);
+      if (b) Object.assign(b, champs || (action==='archive_bien' ? {statut:'vendu'} : {}));
+    }
+    if (action === 'update_match') {
+      const m = (D.matchs||[]).find(x=>x.id===id);
+      if (m) Object.assign(m, champs || {});
+    }
+    // Recalc stats
+    D.stats.acquereurs_actifs = D.contacts.filter(c=>(c.type==='acquereur'||c.type==='les_deux')&&c.statut==='actif').length;
+    D.stats.vendeurs_actifs = D.contacts.filter(c=>(c.type==='vendeur'||c.type==='les_deux')&&c.statut==='actif').length;
+    D.stats.biens_disponibles = D.biens.filter(b=>b.statut==='disponible').length;
+    D.stats.biens_sous_compromis = D.biens.filter(b=>b.statut==='sous_compromis').length;
+    D.stats.biens_vendus = D.biens.filter(b=>b.statut==='vendu').length;
+    D.stats.matchs_en_cours = D.matchs.filter(m=>m.statut==='suggere'||m.statut==='contacte'||m.statut==='visite').length;
+    toast('Modifie (demo)');
+    return true;
+  }
+  try {
+    const res = await fetch(EDIT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${EDIT_TOKEN}` },
+      body: JSON.stringify({ action, id, champs })
+    });
+    const data = await res.json();
+    if (data.success) { toast(data.message || 'OK'); return true; }
+    else { toast(data.error || 'Erreur', false); return false; }
+  } catch (e) { toast('Erreur reseau', false); return false; }
+}
+
+function editPencil() {
+  return '<svg style="width:12px;height:12px;flex-shrink:0" class="edit-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>';
+}
+
+function editableField(label, value, entityType, entityId, fieldName, inputType='text') {
+  const display = value || '-';
+  const eid = `edit-${entityType}-${entityId}-${fieldName}`;
+  return `<div class="field"><div class="field-label">${label}</div><div class="field-value editable" id="${eid}" onclick="startEdit('${eid}','${entityType}','${entityId}','${fieldName}','${inputType}')">${display} ${editPencil()}</div></div>`;
+}
+
+function selectField(label, value, entityType, entityId, fieldName, options) {
+  const eid = `edit-${entityType}-${entityId}-${fieldName}`;
+  const opts = options.map(o => `<option value="${o.v}" ${o.v===value?'selected':''}>${o.l}</option>`).join('');
+  return `<div class="field"><div class="field-label">${label}</div><div class="field-value"><select class="edit-select" onchange="saveSelect('${entityType}','${entityId}','${fieldName}',this.value)">${opts}</select></div></div>`;
+}
+
+function startEdit(eid, entityType, entityId, fieldName, inputType) {
+  const el = document.getElementById(eid);
+  if (el.querySelector('input')) return;
+  const current = el.textContent.trim().replace(/\s*$/, '');
+  const val = current === '-' ? '' : current;
+  el.innerHTML = `<input class="edit-input" type="${inputType}" value="${val}" onblur="saveEdit(this,'${entityType}','${entityId}','${fieldName}')" onkeydown="if(event.key==='Enter')this.blur();" autofocus>`;
+  el.querySelector('input').focus();
+}
+
+async function saveEdit(input, entityType, entityId, fieldName) {
+  const val = input.value.trim();
+  const actionMap = { contact: 'update_contact', bien: 'update_bien', match: 'update_match' };
+  const ok = await crmEdit(actionMap[entityType], entityId, { [fieldName]: val });
+  if (ok) {
+    // Refresh views
+    renderDashboard(); renderContacts(); renderBiens(); renderMatchs(); renderJournal(); renderNotes();
+    // Reopen modal
+    if (entityType === 'contact') showContactModal(entityId);
+    else if (entityType === 'bien') showBienModal(entityId);
+  }
+}
+
+async function saveSelect(entityType, entityId, fieldName, val) {
+  const actionMap = { contact: 'update_contact', bien: 'update_bien', match: 'update_match' };
+  const ok = await crmEdit(actionMap[entityType], entityId, { [fieldName]: val });
+  if (ok) {
+    renderDashboard(); renderContacts(); renderBiens(); renderMatchs(); renderJournal(); renderNotes();
+    if (entityType === 'contact') showContactModal(entityId);
+    else if (entityType === 'bien') showBienModal(entityId);
+  }
+}
+
+async function quickAction(action, id) {
+  const labels = { archive_contact: 'Archiver ce contact', archive_bien: 'Marquer comme vendu' };
+  if (!confirm(labels[action] || `Confirmer ${action} ?`)) return;
+  const ok = await crmEdit(action, id);
+  if (ok) {
+    closeModal();
+    renderDashboard(); renderContacts(); renderBiens(); renderMatchs(); renderJournal(); renderNotes();
+  }
+}
+
+init();
+</script>
+</body>
+</html>
